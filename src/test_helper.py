@@ -132,25 +132,79 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(create_url(TextType.LINK, url="Docs"), f"[{BASE_TXT}](Docs)")
 
     def test_split_nodes_image(self):
-        # TEST CASE:
-        # 1. take just an image in the str
-        # 2. take a prepend text and image at the end
-        # 3. just take a regular str and a img
-        # 4. Take two links
-        # 5. Take three links with the third link as final part of text
-        # 6. take no link
         prepend_text = "This text is PREPENDED"
         appended_text = "This text is APPENDED."
 
         self.assertListEqual(
-            split_nodes_image([TextNode(create_url(TextType.IMAGE), TextType.TEXT)]),
-            [TextNode(BASE_ALT, BASE_SRC, TextType.IMAGE)],
+            split_nodes_image([TextNode(prepend_text, TextType.TEXT)]),
+            [TextNode(prepend_text, TextType.TEXT)],
         )
 
-        return
+        self.assertListEqual(
+            split_nodes_image(
+                [
+                    TextNode(prepend_text, TextType.TEXT),
+                    TextNode(appended_text, TextType.TEXT),
+                ]
+            ),
+            [
+                TextNode(prepend_text, TextType.TEXT),
+                TextNode(appended_text, TextType.TEXT),
+            ],
+        )
+
+        self.assertListEqual(
+            split_nodes_image([TextNode(create_url(TextType.IMAGE), TextType.TEXT)]),
+            [TextNode(BASE_ALT, TextType.IMAGE, BASE_SRC)],
+        )
+
+        self.assertListEqual(
+            split_nodes_image(
+                [TextNode(prepend_text + create_url(TextType.IMAGE), TextType.TEXT)]
+            ),
+            [
+                TextNode(prepend_text, TextType.TEXT),
+                TextNode(BASE_ALT, TextType.IMAGE, BASE_SRC),
+            ],
+        )
+
+        self.assertListEqual(
+            split_nodes_image(
+                [
+                    TextNode(
+                        prepend_text + create_url(TextType.IMAGE) + appended_text,
+                        TextType.TEXT,
+                    )
+                ]
+            ),
+            [
+                TextNode(prepend_text, TextType.TEXT),
+                TextNode(BASE_ALT, TextType.IMAGE, BASE_SRC),
+                TextNode(appended_text, TextType.TEXT),
+            ],
+        )
+
+        self.assertListEqual(
+            split_nodes_image(
+                [
+                    TextNode(
+                        prepend_text + create_url(TextType.IMAGE) + appended_text,
+                        TextType.TEXT,
+                    ),
+                    TextNode(prepend_text, TextType.TEXT),
+                    TextNode(create_url(TextType.IMAGE), TextType.TEXT),
+                ]
+            ),
+            [
+                TextNode(prepend_text, TextType.TEXT),
+                TextNode(BASE_ALT, TextType.IMAGE, BASE_SRC),
+                TextNode(appended_text, TextType.TEXT),
+                TextNode(prepend_text, TextType.TEXT),
+                TextNode(BASE_ALT, TextType.IMAGE, BASE_SRC),
+            ],
+        )
 
     def test_split_nodes_link(self):
-        return
         node = TextNode(
             "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
             TextType.TEXT,
@@ -169,21 +223,72 @@ class TestHelpers(unittest.TestCase):
             ],
         )
 
-    def test_split_images(self):
-        # node = TextNode(
-        #     "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
-        #     TextType.TEXT,
-        # )
-        # new_nodes = split_nodes_image([node])
-        # self.assertListEqual(
-        #     new_nodes,
-        #     [
-        #         TextNode("This is text with an ", TextType.TEXT),
-        #         TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
-        #         TextNode(" and another ", TextType.TEXT),
-        #         TextNode(
-        #             "second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"
-        #         ),
-        #     ],
-        # )
-        pass
+        prepend_text = "This text is PREPENDED"
+        appended_text = "This text is APPENDED."
+
+        self.assertListEqual(
+            split_nodes_link([TextNode(prepend_text, TextType.TEXT)]),
+            [TextNode(prepend_text, TextType.TEXT)],
+        )
+
+        self.assertListEqual(
+            split_nodes_link(
+                [
+                    TextNode(prepend_text, TextType.TEXT),
+                    TextNode(appended_text, TextType.TEXT),
+                ]
+            ),
+            [
+                TextNode(prepend_text, TextType.TEXT),
+                TextNode(appended_text, TextType.TEXT),
+            ],
+        )
+
+        self.assertListEqual(
+            split_nodes_link([TextNode(create_url(), TextType.TEXT)]),
+            [TextNode(BASE_TXT, TextType.LINK, BASE_URL)],
+        )
+
+        self.assertListEqual(
+            split_nodes_link([TextNode(prepend_text + create_url(), TextType.TEXT)]),
+            [
+                TextNode(prepend_text, TextType.TEXT),
+                TextNode(BASE_TXT, TextType.LINK, BASE_URL),
+            ],
+        )
+
+        self.assertListEqual(
+            split_nodes_link(
+                [
+                    TextNode(
+                        prepend_text + create_url() + appended_text,
+                        TextType.TEXT,
+                    )
+                ]
+            ),
+            [
+                TextNode(prepend_text, TextType.TEXT),
+                TextNode(BASE_TXT, TextType.LINK, BASE_URL),
+                TextNode(appended_text, TextType.TEXT),
+            ],
+        )
+
+        self.assertListEqual(
+            split_nodes_link(
+                [
+                    TextNode(
+                        prepend_text + create_url() + appended_text,
+                        TextType.TEXT,
+                    ),
+                    TextNode(prepend_text, TextType.TEXT),
+                    TextNode(create_url(), TextType.TEXT),
+                ]
+            ),
+            [
+                TextNode(prepend_text, TextType.TEXT),
+                TextNode(BASE_TXT, TextType.LINK, BASE_URL),
+                TextNode(appended_text, TextType.TEXT),
+                TextNode(prepend_text, TextType.TEXT),
+                TextNode(BASE_TXT, TextType.LINK, BASE_URL),
+            ],
+        )

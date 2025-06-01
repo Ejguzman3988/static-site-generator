@@ -87,7 +87,23 @@ def split_nodes_image(old_nodes):
         if node.text_type != TextType.TEXT:
             new_nodes.append(node)
         else:
-            list_image_tuple = extract_markdown_images(node.text)
+            list_image_tuple = extract_markdown_links(node.text)
+            if len(list_image_tuple) == 0:
+                new_nodes.append(node)
+
+            temp_str = node.text
+            for [alt, src] in list_image_tuple:
+                sub_strs = node.text.split(f"![{alt}]({src})", 1)
+                front = sub_strs[0]
+                back = sub_strs[1]
+                if front != "":
+                    new_nodes.append(TextNode(front, TextType.TEXT))
+
+                new_nodes.append(TextNode(alt, TextType.IMAGE, src))
+                temp_str = back
+
+            if temp_str != "" and len(list_image_tuple) != 0:
+                new_nodes.append(TextNode(temp_str, TextType.TEXT))
             # list of tuples with images
 
     return new_nodes
@@ -95,9 +111,31 @@ def split_nodes_image(old_nodes):
 
 def split_nodes_link(old_nodes):
     new_nodes = []
-    #     for node in old_nodes:
-    #         if node.text_type != TextType.TEXT:
-    #             new_nodes.append(node)
-    #         else:
-    #
+
+    # To be able to change this over the operations
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+        else:
+            list_image_tuple = extract_markdown_links(node.text)
+            if len(list_image_tuple) == 0:
+                new_nodes.append(node)
+
+            temp_str = node.text
+
+            for [txt, url] in list_image_tuple:
+                sub_strs = temp_str.split(f"[{txt}]({url})", 1)
+                front = sub_strs[0]
+                back = sub_strs[1]
+                if front != "":
+                    new_nodes.append(TextNode(front, TextType.TEXT))
+
+                new_nodes.append(TextNode(txt, TextType.LINK, url))
+
+                temp_str = back
+
+            if temp_str != "" and len(list_image_tuple) != 0:
+                new_nodes.append(TextNode(temp_str, TextType.TEXT))
+            # list of tuples with images
+
     return new_nodes
