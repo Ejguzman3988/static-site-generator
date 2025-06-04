@@ -20,7 +20,7 @@ def extract_title(markdown):
     block_type = block_to_block_type(first_block)
     if block_type != HEADING or first_block[:2] != "# ":
         raise Exception("No H1 Header")
-    return block_heading_to_html(first_block).to_html()
+    return first_block[2:]
 
 
 def markdown_to_html_node(markdown):

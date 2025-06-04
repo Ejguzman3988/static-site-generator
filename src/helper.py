@@ -59,14 +59,25 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             new_nodes.append(node)
         else:
             split_node = node.text.split(delimiter)
-            if len(split_node) <= 1:
+            if len(split_node) <= 2:
                 new_nodes.append(node)
-            elif len(split_node) == 2:
-                raise Exception("That is invalid markdown")
-            else:
+            elif len(split_node) == 3:
                 new_nodes.append(TextNode(split_node[0], TextType.TEXT))
                 new_nodes.append(TextNode(split_node[1], text_type))
                 new_nodes.append(TextNode(split_node[2], TextType.TEXT))
+            elif len(split_node) >= 3:
+                first_index = node.text.find("**")
+                start = 0
+                if first_index == 0:
+                    new_nodes.append(TextNode(split_node[1], text_type))
+                    start = 1
+                else:
+                    new_nodes.append(TextNode(split_node[0], TextType.TEXT))
+
+                for node in split_node[start + 1 :]:
+                    new_type = [text_type, TextType.TEXT][start % 2]
+                    start += 1
+                    new_nodes.append(TextNode(node, new_type))
 
     return new_nodes
 

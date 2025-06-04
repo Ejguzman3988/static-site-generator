@@ -24,7 +24,7 @@ class TestMarkdownNode(unittest.TestCase):
             extract_title(non_head_2)
 
         heading = extract_title(md)
-        self.assertEqual(heading, "<h1>This is a heading</h1>")
+        self.assertEqual(heading, "This is a heading")
 
     def test_markdown_to_blocks(self):
         md = """
@@ -46,9 +46,55 @@ This is the same paragraph on a new line
             ],
         )
 
+    def test_bold(self):
+        md_ans = [
+            [
+                """**Test**
+        """,
+                "<div><p><b>Test</b></p></div>",
+            ],
+            [
+                """**Test** first
+        """,
+                "<div><p><b>Test</b> first</p></div>",
+            ],
+            [
+                """second **Test**
+        """,
+                "<div><p>second <b>Test</b></p></div>",
+            ],
+            [
+                """**start** third **Test** more at the end
+        """,
+                "<div><p><b>start</b> third <b>Test</b> more at the end</p></div>",
+            ],
+            [
+                """**start** third **end**
+        """,
+                "<div><p><b>start</b> third <b>end</b></p></div>",
+            ],
+            [
+                """beginning **start** third **end**
+        """,
+                "<div><p>beginning <b>start</b> third <b>end</b></p></div>",
+            ],
+            [
+                """**start** test **middle** test **end**
+        """,
+                "<div><p><b>start</b> test <b>middle</b> test <b>end</b></p></div>",
+            ],
+            [
+                """**start** **middle** **end**
+        """,
+                "<div><p><b>start</b> <b>middle</b> <b>end</b></p></div>",
+            ],
+        ]
+        for md, ans in md_ans:
+            self.assertEqual(markdown_to_html_node(md).to_html(), ans)
+
     def test_paragraphs(self):
         md = """
-This is **bolded** paragraph
+This is **bolded** paragraph with **extra**
 text in a p
 tag here
 
@@ -60,7 +106,7 @@ This is another paragraph with _italic_ text and `code` here
         html = node.to_html()
         self.assertEqual(
             html,
-            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
+            "<div><p>This is <b>bolded</b> paragraph with <b>extra</b> text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
         )
 
     def test_heading(self):

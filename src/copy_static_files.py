@@ -4,6 +4,25 @@ import shutil
 from markdown import extract_title, markdown_to_html_node
 
 
+def generate_page_recursive(
+    dir_path_content="content", template_path="template.html", des_dir_path="public"
+):
+    if os.path.isdir(dir_path_content):
+        for path in os.listdir(dir_path_content):
+            if os.path.isdir(os.path.join(dir_path_content, path)):
+                generate_page_recursive(
+                    os.path.join(dir_path_content, path),
+                    template_path,
+                    os.path.join(des_dir_path, path),
+                )
+            else:
+                generate_page(
+                    os.path.join(dir_path_content, path),
+                    template_path,
+                    os.path.join(des_dir_path, f"{path.split('.')[0]}.html"),
+                )
+
+
 def generate_page(
     from_path="content/index.md",
     template_path="template.html",
@@ -15,36 +34,36 @@ def generate_page(
 
     md_to_html = markdown_to_html_node(md).to_html()
     page_title = extract_title(md)
-    template.replace("{{ Title }}", page_title)
-    template.replace("{{ Content }}", md_to_html)
+    template = template.replace("{{ Title }}", page_title)
+    template = template.replace("{{ Content }}", md_to_html)
 
     dirs = dest_path.split("/")
 
     writting_path = []
-    for dir in dirs:
+    for dir in dirs[:-1]:
         writting_path.append(dir)
         current_dir = "/".join(writting_path)
         if not os.path.exists(current_dir):
             os.makedirs(current_dir)
 
-    open(dest_path, "w").write(template_path)
+    open(dest_path, "w").write(template)
 
     # template = open(template_path, "r").read()
     # html = template.replace("{{content}}", md)
     # open(dest_path, "w").write(html
 
 
-def copy_public(copy_path="/public", origin_path="/static"):
-    cwd = os.getcwd()
-    if not os.path.exists(cwd + copy_path):
-        os.makedirs(cwd + copy_path)
-    if len(os.listdir(cwd + copy_path)) > 0:
-        shutil.rmtree(cwd + copy_path)
+def copy_public(copy_path="public", origin_path="static"):
+    if not os.path.exists(copy_path):
+        os.makedirs(copy_path)
+
+    if len(os.listdir(copy_path)) > 0:
+        shutil.rmtree(copy_path)
 
     copied_files = []
 
     def traverse_file_and_folders(origin_path, path, copied_files):
-        new_path = origin_path + "/" + path
+        new_path = os.path.join(origin_path, path)
         if os.path.isdir(new_path):
             for another_path in os.listdir(new_path):
                 traverse_file_and_folders(new_path, another_path, copied_files)
@@ -52,7 +71,7 @@ def copy_public(copy_path="/public", origin_path="/static"):
         if os.path.isfile(new_path):
             copied_files.append(new_path)
 
-    traverse_file_and_folders(cwd, origin_path[1:], copied_files)
+    traverse_file_and_folders("./", origin_path, copied_files)
 
     for file in copied_files:
         file_path = "/".join(file.split("/")[:-1])
