@@ -1,8 +1,9 @@
-from textnode import TextNode, TextType
+from copy_static_files import copy_public, generate_page
 
 
 def main():
-    print(TextNode("Some dummy Text", TextType.LINK, "https://www.dummy.none"))
+    # copy_public()
+    generate_page()
 
 
 if __name__ == "__main__":

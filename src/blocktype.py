@@ -52,8 +52,8 @@ def is_ordered_list_block(block_str):
         if (
             len(line) < 3
             or find_dot < 1
-            or int(prefix) != count
             or not prefix.isnumeric()
+            or int(prefix) != count
             or len(line) <= find_dot + 2
             or line[find_dot + 1] != " "
             or not line[find_dot + 2].isalnum()
@@ -108,3 +108,7 @@ def is_heading(block_str):
         and block_str[count + 1].isalnum()
         else PARAGRAPH
     )
+
+
+def block_to_str(block_str):
+    return " ".join(block_str.split("\n"))
