@@ -4,31 +4,31 @@ import shutil
 from markdown import extract_title, markdown_to_html_node
 
 
-def generate_page_recursive(
-    dir_path_content="content", template_path="template.html", des_dir_path="public"
-):
+def generate_page_recursive(basepath, dir_path_content, template_path, des_dir_path):
     if os.path.isdir(dir_path_content):
         for path in os.listdir(dir_path_content):
             if os.path.isdir(os.path.join(dir_path_content, path)):
                 generate_page_recursive(
+                    basepath,
                     os.path.join(dir_path_content, path),
                     template_path,
                     os.path.join(des_dir_path, path),
                 )
             else:
                 generate_page(
+                    basepath,
                     os.path.join(dir_path_content, path),
                     template_path,
                     os.path.join(des_dir_path, f"{path.split('.')[0]}.html"),
                 )
 
 
-def generate_page(
-    from_path="content/index.md",
-    template_path="template.html",
-    dest_path="public/index.html",
-):
+def generate_page(basepath, from_path, template_path, dest_path):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    from_path = os.path.join(basepath, from_path)
+    template_path = os.path.join(basepath, template_path)
+    dest_path = os.path.join(basepath, dest_path)
+
     md = open(from_path, "r").read()
     template = open(template_path, "r").read()
 
@@ -36,6 +36,8 @@ def generate_page(
     page_title = extract_title(md)
     template = template.replace("{{ Title }}", page_title)
     template = template.replace("{{ Content }}", md_to_html)
+    template = template.replace('href="/', f'href="{basepath}')
+    template = template.replace('src="/', f'src="{basepath}')
 
     dirs = dest_path.split("/")
 
@@ -48,12 +50,10 @@ def generate_page(
 
     open(dest_path, "w").write(template)
 
-    # template = open(template_path, "r").read()
-    # html = template.replace("{{content}}", md)
-    # open(dest_path, "w").write(html
 
-
-def copy_public(copy_path="public", origin_path="static"):
+def copy_files(basepath, copy_path="public", origin_path="static"):
+    copy_path = os.path.join(basepath, copy_path)
+    origin_path = os.path.join(basepath, origin_path)
     if not os.path.exists(copy_path):
         os.makedirs(copy_path)
 
