@@ -4,30 +4,27 @@ import shutil
 from markdown import extract_title, markdown_to_html_node
 
 
-def generate_page_recursive(basepath, dir_path_content, template_path, des_dir_path):
+def generate_page_recursive(dir_path_content, template_path, des_dir_path, basepath):
     if os.path.isdir(dir_path_content):
         for path in os.listdir(dir_path_content):
             if os.path.isdir(os.path.join(dir_path_content, path)):
                 generate_page_recursive(
-                    basepath,
                     os.path.join(dir_path_content, path),
                     template_path,
                     os.path.join(des_dir_path, path),
+                    basepath,
                 )
             else:
                 generate_page(
-                    basepath,
                     os.path.join(dir_path_content, path),
                     template_path,
                     os.path.join(des_dir_path, f"{path.split('.')[0]}.html"),
+                    basepath,
                 )
 
 
-def generate_page(basepath, from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
-    from_path = os.path.join(basepath, from_path)
-    template_path = os.path.join(basepath, template_path)
-    dest_path = os.path.join(basepath, dest_path)
 
     md = open(from_path, "r").read()
     template = open(template_path, "r").read()
@@ -51,9 +48,7 @@ def generate_page(basepath, from_path, template_path, dest_path):
     open(dest_path, "w").write(template)
 
 
-def copy_files(basepath, copy_path="public", origin_path="static"):
-    copy_path = os.path.join(basepath, copy_path)
-    origin_path = os.path.join(basepath, origin_path)
+def copy_files(copy_path="public", origin_path="static"):
     if not os.path.exists(copy_path):
         os.makedirs(copy_path)
 
